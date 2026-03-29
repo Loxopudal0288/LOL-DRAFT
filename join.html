@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Присоединиться к драфту — LoL</title>
+  <style>
+    body {
+      background: #0f0f1b;
+      color: #e0e0ff;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .form-container {
+      background: #1a1a2e;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(100, 0, 255, 0.4);
+      width: 320px;
+      text-align: center;
+    }
+    h1 {
+      color: #c9a0ff;
+      margin-bottom: 20px;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #444;
+      border-radius: 6px;
+      background: #22223a;
+      color: #e0e0ff;
+      box-sizing: border-box;
+    }
+    button {
+      background: linear-gradient(to bottom, #5cb85c, #3d8b3d);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 16px;
+    }
+    button:hover {
+      background: linear-gradient(to bottom, #6cc86c, #4d9b4d);
+    }
+    #status {
+      margin-top: 16px;
+      min-height: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <h1>Присоединиться к драфту</h1>
+    <input type="text" id="team-name" placeholder="Название вашей команды" required>
+    <button onclick="joinDraft()">Присоединиться</button>
+    <div id="status"></div>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const draftId = urlParams.get('draft_id');
+
+    if (!draftId) {
+      document.querySelector('.form-container').innerHTML = 
+        '<h2 style="color: #ff6666;">Неверная ссылка</h2>';
+    }
+
+    async function joinDraft() {
+      const teamName = document.getElementById('team-name').value.trim();
+      const statusEl = document.getElementById('status');
+
+      if (!teamName) {
+        statusEl.textContent = "Введите название команды";
+        statusEl.style.color = "#ff6666";
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/draft/${draftId}/join`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ team_name: teamName })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const assignedSide = data.assigned_side; // ← Получаем от бэкенда!
+
+          statusEl.textContent = "Успешно! Переход на драфт...";
+          statusEl.style.color = "#a0ffa0";
+          setTimeout(() => {
+            window.location.href = `/draft?draft_id=${draftId}&side=${assignedSide}`;
+          }, 1500);
+        } else {
+          const err = await res.json();
+          statusEl.textContent = err.detail || "Ошибка";
+          statusEl.style.color = "#ff6666";
+        }
+      } catch (e) {
+        statusEl.textContent = "Ошибка подключения";
+        statusEl.style.color = "#ff6666";
+        console.error(e);
+      }
+    }
+  </script>
+</body>
+</html>
