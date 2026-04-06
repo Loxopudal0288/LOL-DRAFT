@@ -343,9 +343,45 @@
       background: #2a2a45;
       color: #d0d0ff;
     }
+
+    /* === ЗАГРУЗКА === */
+    #loading {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.9);
+      padding: 30px 50px;
+      border-radius: 12px;
+      border: 2px solid #8a8aff;
+      z-index: 1000;
+      text-align: center;
+    }
+    #loading h2 {
+      color: #c9a0ff;
+      margin: 0 0 15px 0;
+    }
+    .spinner {
+      border: 4px solid #1a1a2e;
+      border-top: 4px solid #8a8aff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
+
+  <div id="loading">
+    <h2>Загрузка чемпионов...</h2>
+    <div class="spinner"></div>
+  </div>
 
   <!-- ПИКИ -->
   <div class="side-panel left">
@@ -437,25 +473,20 @@
   </div>
 
   <script>
-    const championNames = [
-      "Aatrox", "Ahri", "Akali", "Akshan", "Alistar", "Amumu", "Anivia", "Annie", "Aphelios", "Ashe",
-      "Aurelion Sol", "Azir", "Bard", "Bel'Veth", "Blitzcrank", "Brand", "Braum", "Briar", "Caitlyn", "Camille",
-      "Cassiopeia", "Cho'Gath", "Corki", "Darius", "Diana", "Dr. Mundo", "Draven", "Ekko", "Elise", "Evelynn",
-      "Ezreal", "Fiddlesticks", "Fiora", "Fizz", "Galio", "Gangplank", "Garen", "Gnar", "Gragas", "Graves",
-      "Gwen", "Hecarim", "Heimerdinger", "Illaoi", "Irelia", "Ivern", "Janna", "Jarvan IV", "Jax", "Jayce",
-      "Jhin", "Jinx", "K'Sante", "Kai'Sa", "Kalista", "Karma", "Karthus", "Kassadin", "Katarina", "Kayle",
-      "Kayn", "Kennen", "Kha'Zix", "Kindred", "Kled", "Kog'Maw", "LeBlanc", "Lee Sin", "Leona", "Lillia",
-      "Lissandra", "Lucian", "Lulu", "Lux", "Malphite", "Malzahar", "Maokai", "Master Yi", "Milio", "Miss Fortune",
-      "Mordekaiser", "Morgana", "Naafiri", "Nami", "Nasus", "Nautilus", "Neeko", "Nidalee", "Nilah", "Nocturne",
-      "Nunu & Willump", "Olaf", "Orianna", "Ornn", "Pantheon", "Poppy", "Pyke", "Qiyana", "Quinn", "Rakan",
-      "Rammus", "Rek'Sai", "Rell", "Renata Glasc", "Renekton", "Rengar", "Riven", "Rumble", "Ryze", "Samira",
-      "Sejuani", "Senna", "Seraphine", "Sett", "Shaco", "Shen", "Shyvana", "Singed", "Sion", "Sivir",
-      "Skarner", "Smolder", "Sona", "Soraka", "Swain", "Sylas", "Syndra", "Tahm Kench", "Taliyah", "Talon",
-      "Taric", "Teemo", "Thresh", "Tristana", "Trundle", "Tryndamere", "Twisted Fate", "Twitch", "Udyr", "Urgot",
-      "Varus", "Vayne", "Veigar", "Vel'Koz", "Vex", "Vi", "Viego", "Viktor", "Vladimir", "Volibear",
-      "Warwick", "Wukong", "Xayah", "Xerath", "Xin Zhao", "Yasuo", "Yone", "Yorick", "Yuumi", "Zac",
-      "Zed", "Zeri", "Ziggs", "Zilean", "Zoe", "Zyra"
-    ].sort();
+    // === КОНФИГУРАЦИЯ DATADRAGON API ===
+    let DDATA_VERSION = '';
+    let DDATA_BASE = '';
+    let CHAMPION_DATA_URL = '';
+    let CHAMPION_ICON_BASE = '';
+
+    // === МАППИНГ РОЛЕЙ ===
+    const ROLE_CHAMPIONS = {
+      "TOP": ["Aatrox", "Camille", "Darius", "Fiora", "Garen", "Gnar", "Illaoi", "Irelia", "Jax", "Jayce", "KSante", "Kennen", "Malphite", "Mordekaiser", "Nasus", "Ornn", "Pantheon", "Poppy", "Renekton", "Riven", "Sett", "Shen", "Singed", "Sion", "Teemo", "Trundle", "Tryndamere", "Vladimir", "MonkeyKing", "Yorick", "Gangplank", "Graves", "Urgot", "Volibear", "Yone", "Ambessa", "Aurora"],
+      "JG": ["Amumu", "Belveth", "Diana", "Ekko", "Elise", "Evelynn", "Fiddlesticks", "Graves", "Hecarim", "Ivern", "JarvanIV", "Kayn", "KhaZix", "Kindred", "Kled", "LeeSin", "Lillia", "MasterYi", "Nidalee", "Nocturne", "Nunu", "Olaf", "Rammus", "RekSai", "Rengar", "Sejuani", "Shaco", "Skarner", "Taliyah", "Trundle", "Udyr", "Vi", "Viego", "Volibear", "Warwick", "MonkeyKing", "XinZhao", "Zac", "Karthus", "Aurora"],
+      "MID": ["Ahri", "Akali", "Anivia", "Annie", "AurelionSol", "Azir", "Brand", "Cassiopeia", "Corki", "Diana", "Ekko", "Fizz", "Galio", "Kassadin", "Katarina", "Leblanc", "Lissandra", "Lux", "Malzahar", "Neeko", "Orianna", "Qiyana", "Ryze", "Syndra", "Talon", "TwistedFate", "Veigar", "Viktor", "Vladimir", "Xerath", "Yasuo", "Yone", "Zed", "Ziggs", "Zoe", "Zyra", "Sylas", "Aurora", "Ambessa"],
+      "ADC": ["Aphelios", "Ashe", "Caitlyn", "Draven", "Ezreal", "Jhin", "Jinx", "Kaisa", "Kalista", "KogMaw", "Lucian", "MissFortune", "Nilah", "Samira", "Senna", "Sivir", "Smolder", "Tristana", "Twitch", "Varus", "Vayne", "Xayah", "Zeri", "Corki", "Ambessa"],
+      "SUP": ["Alistar", "Bard", "Blitzcrank", "Brand", "Braum", "Janna", "Karma", "Leona", "Lulu", "Lux", "Morgana", "Nami", "Nautilus", "Pyke", "Rakan", "Rell", "RenataGlasc", "Senna", "Seraphine", "Soraka", "TahmKench", "Taric", "Thresh", "Yuumi", "Zilean", "Zyra", "Milio", "Ambessa", "Aurora"]
+    };
 
     let draftId = null;
     let mySide = null;
@@ -467,6 +498,10 @@
     let lastPhase = null;
     let lastTurn = null;
     let timerRunning = false;
+    let currentRoleFilter = "all";
+    let allChampions = {};
+    let championList = [];
+    let championKeyMap = {};
 
     const container = document.getElementById("champions-container");
     const phaseInfo = document.getElementById("phase-info");
@@ -476,6 +511,71 @@
     const readyRedBtn = document.getElementById("ready-red");
     const captainLinkEl = document.getElementById("captain-link");
     const spectatorLinkEl = document.getElementById("spectator-link");
+    const loadingEl = document.getElementById("loading");
+
+    // ✅ ПОЛУЧЕНИЕ ПОСЛЕДНЕЙ ВЕРСИИ API
+    async function getLatestVersion() {
+      try {
+        const res = await fetch('https://ddragon.leagueoflegends.com/api/versions.json');
+        if (!res.ok) throw new Error('Failed to fetch versions');
+        const versions = await res.json();
+        const latestVersion = versions[0];
+        console.log(`📦 Последняя версия API: ${latestVersion}`);
+        return latestVersion;
+      } catch (error) {
+        console.error('❌ Ошибка получения версии:', error);
+        return '14.23.1'; // Fallback версия
+      }
+    }
+
+    // ✅ ИНИЦИАЛИЗАЦИЯ API
+    async function initAPI() {
+      DDATA_VERSION = await getLatestVersion();
+      DDATA_BASE = `https://ddragon.leagueoflegends.com/cdn/${DDATA_VERSION}`;
+      CHAMPION_DATA_URL = `${DDATA_BASE}/data/ru_RU/champion.json`;
+      CHAMPION_ICON_BASE = `${DDATA_BASE}/img/champion`;
+      
+      console.log(`🔧 DataDragon база: ${DDATA_BASE}`);
+      console.log(` Загрузка чемпионов из: ${CHAMPION_DATA_URL}`);
+    }
+
+    // ✅ ЗАГРУЗКА ЧЕМПИОНОВ С API (РУССКИЙ ЯЗЫК)
+    async function loadChampionsFromAPI() {
+      try {
+        const response = await fetch(CHAMPION_DATA_URL);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        allChampions = data.data;
+        
+        championKeyMap = {};
+        
+        Object.values(allChampions).forEach(champ => {
+          championKeyMap[champ.name] = champ.id; // Русское имя → Английский ключ
+        });
+        
+        championList = Object.values(allChampions).sort((a, b) => 
+          a.name.localeCompare(b.name, 'ru')
+        );
+        
+        console.log(`✅ Загружено ${championList.length} чемпионов`);
+        console.log(`✅ Версия API: ${DDATA_VERSION}`);
+        console.log('📋 Последние чемпионы:', championList.slice(-10).map(c => c.name));
+        
+        return true;
+      } catch (error) {
+        console.error('❌ Ошибка загрузки чемпионов:', error);
+        alert('Не удалось загрузить список чемпионов. Проверьте подключение к интернету.');
+        return false;
+      }
+    }
+
+    // ✅ ПОЛУЧЕНИЕ URL ИКОНКИ
+    function getChampionIconUrl(championId) {
+      return `${CHAMPION_ICON_BASE}/${championId}.png`;
+    }
 
     function init() {
       const urlParams = new URLSearchParams(window.location.search);
@@ -487,36 +587,50 @@
         return;
       }
 
-      renderChampions();
-      setupEventListeners();
-      syncAndRender();
-      setInterval(syncAndRender, 1000);
+      initAPI().then(() => {
+        loadChampionsFromAPI().then(success => {
+          if (success) {
+            loadingEl.style.display = 'none';
+            renderChampions();
+            setupEventListeners();
+            syncAndRender();
+            setInterval(syncAndRender, 1000);
+          } else {
+            loadingEl.innerHTML = '<h2 style="color: #ff6666;">Ошибка загрузки</h2><p>Обновите страницу</p>';
+          }
+        });
+      });
     }
 
-    function renderChampions() {
+    // ✅ ОТРИСОВКА ЧЕМПИОНОВ С ФИЛЬТРАЦИЕЙ ПО РОЛЯМ
+    function renderChampions(roleFilter = "all") {
       container.innerHTML = '';
-      championNames.forEach(name => {
+      
+      let championsToShow = championList;
+      
+      if (roleFilter !== "all") {
+        const roleIds = ROLE_CHAMPIONS[roleFilter] || [];
+        championsToShow = championList.filter(champ => roleIds.includes(champ.id));
+      }
+
+      championsToShow.forEach(champ => {
         const cell = document.createElement("div");
         cell.classList.add("champion-cell");
-
-        // ✅ ИСПРАВЛЕНО: Загрузка иконок с DataDragon API
-        let key = name
-          .replace(/ /g, "")
-          .replace(/'/g, "")
-          .replace(/\./g, "")
-          .replace(/&/g, "");
+        cell.dataset.champion = champ.name;
+        cell.dataset.id = champ.id;
+        cell.dataset.role = getChampionRole(champ.id);
 
         const img = document.createElement("img");
-        // ✅ ИСПРАВЛЕНО: Прямая ссылка на DataDragon API вместо локальных файлов
-        img.src = `https://ddragon.leagueoflegends.com/cdn/14.23.1/img/champion/${key}.png`;
-        img.alt = name;
+        const iconUrl = getChampionIconUrl(champ.id);
+        img.src = iconUrl;
+        img.alt = champ.name;
         img.onerror = () => {
           img.style.display = "none";
-          console.warn(`Иконка не найдена: ${key}`);
+          console.warn(`❌ Иконка не найдена: ${champ.id} (${champ.name})`);
         };
 
         const label = document.createElement("div");
-        label.textContent = name;
+        label.textContent = champ.name;
 
         cell.appendChild(img);
         cell.appendChild(label);
@@ -524,21 +638,60 @@
       });
     }
 
+    // ✅ ОПРЕДЕЛЕНИЕ РОЛИ ЧЕМПИОНА
+    function getChampionRole(champId) {
+      for (const [role, champions] of Object.entries(ROLE_CHAMPIONS)) {
+        if (champions.includes(champId)) {
+          return role;
+        }
+      }
+      return "other";
+    }
+
     function setupEventListeners() {
-      document.getElementById("search-input").addEventListener("input", (e) => {
-        const query = e.target.value.trim().toLowerCase();
-        document.querySelectorAll(".champion-cell").forEach(cell => {
-          const name = cell.querySelector("div").textContent.toLowerCase();
-          cell.style.display = name.includes(query) ? "flex" : "none";
+      // Фильтрация по ролям
+      document.querySelectorAll(".role-cell").forEach(cell => {
+        cell.addEventListener("click", (e) => {
+          e.preventDefault();
+          const role = cell.dataset.role || cell.textContent;
+          currentRoleFilter = role;
+          
+          document.querySelectorAll(".role-cell").forEach(c => c.classList.remove("active"));
+          cell.classList.add("active");
+          
+          if (selectedCell) {
+            selectedCell.classList.remove("selected");
+            selectedCell = null;
+          }
+          
+          renderChampions(role);
+          
+          const searchQuery = document.getElementById("search-input").value.trim().toLowerCase();
+          if (searchQuery) {
+            filterChampionsBySearch(searchQuery);
+          }
         });
       });
 
-      document.querySelectorAll(".champion-cell").forEach(cell => {
-        cell.addEventListener("click", () => {
-          if (selectedCell) selectedCell.classList.remove("selected");
-          cell.classList.add("selected");
-          selectedCell = cell;
-        });
+      // Поиск
+      document.getElementById("search-input").addEventListener("input", (e) => {
+        const query = e.target.value.trim().toLowerCase();
+        filterChampionsBySearch(query);
+      });
+
+      // Выбор чемпиона
+      document.addEventListener("click", (e) => {
+        const cell = e.target.closest(".champion-cell");
+        if (!cell) return;
+        
+        if (selectedCell) {
+          selectedCell.classList.remove("selected");
+        }
+        selectedCell = cell;
+        
+        if (mySide !== "spectator") {
+          confirmBtn.disabled = false;
+        }
       });
 
       confirmBtn.onclick = handleConfirm;
@@ -556,6 +709,21 @@
         const spectatorLink = `${window.location.origin}/draft?draft_id=${draftId}&side=spectator`;
         copyTextToClipboard(spectatorLink, spectatorLinkEl);
       };
+    }
+
+    function filterChampionsBySearch(query) {
+      document.querySelectorAll(".champion-cell").forEach(cell => {
+        const name = cell.dataset.champion.toLowerCase();
+        const matchesSearch = name.includes(query);
+        
+        let matchesRole = true;
+        if (currentRoleFilter !== "all") {
+          const champId = cell.dataset.id;
+          matchesRole = (ROLE_CHAMPIONS[currentRoleFilter] || []).includes(champId);
+        }
+        
+        cell.style.display = (matchesSearch && matchesRole) ? "flex" : "none";
+      });
     }
 
     async function copyTextToClipboard(text, element) {
@@ -649,8 +817,9 @@
         ...state.picks_blue.filter(p => p),
         ...state.picks_red.filter(p => p)
       ]);
+      
       document.querySelectorAll(".champion-cell").forEach(cell => {
-        const name = cell.querySelector("div").textContent;
+        const name = cell.dataset.champion;
         if (bannedOrPicked.has(name)) {
           cell.classList.add("picked");
         } else {
@@ -658,7 +827,7 @@
         }
       });
 
-      // ✅ ИСПРАВЛЕНО: Таймер запускается только при смене хода
+      // ✅ ТАЙМЕР ЗАПУСКАЕТСЯ ТОЛЬКО ПРИ СМЕНЕ ХОДА
       if (isActivePhase && isMyTurn) {
         if (lastTurn !== state.current_turn) {
           lastTurn = state.current_turn;
@@ -697,7 +866,7 @@
       }
     }
 
-    // ✅ ИСПРАВЛЕНО: Стабильный таймер с сбросом при запуске
+    // ✅ СТАБИЛЬНЫЙ ТАЙМЕР
     function startTimer() {
       timeLeft = 35;
       timerRunning = true;
@@ -738,7 +907,7 @@
 
     async function handleConfirm() {
       if (!selectedCell) return;
-      const name = selectedCell.querySelector("div").textContent;
+      const championName = selectedCell.dataset.champion;
 
       selectedCell.classList.add("picked");
       selectedCell.style.pointerEvents = "none";
@@ -748,11 +917,11 @@
         await fetch(`/api/draft/${draftId}/action`, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ champion: name })
+          body: JSON.stringify({ champion: championName })
         });
       } catch (e) {
         document.querySelectorAll(".champion-cell").forEach(cell => {
-          if (cell.querySelector("div").textContent === name) {
+          if (cell.dataset.champion === championName) {
             cell.classList.remove("picked");
             cell.style.pointerEvents = "";
           }
