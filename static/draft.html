@@ -35,6 +35,10 @@
       color: #8a8aff;
       font-size: 16px;
       z-index: 10;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 200px;
     }
     .side-panel.left .team-label { left: 10px; top: 10px; }
     .side-panel.right .team-label { right: 10px; top: 10px; }
@@ -84,6 +88,53 @@
       white-space: nowrap;
     }
 
+    /* === ТАЙМЕРЫ ПО БОКАМ === */
+    .timer-container {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      z-index: 20;
+    }
+    .timer-container.left {
+      left: 230px;
+    }
+    .timer-container.right {
+      right: 230px;
+    }
+
+    .team-timer-label {
+      font-size: 14px;
+      font-weight: bold;
+      color: #8a8aff;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 180px;
+    }
+
+    .timer {
+      font-size: 48px;
+      color: #ff6666;
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+    }
+    .timer.warning {
+      color: #ff0000;
+      animation: pulse 0.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .timer.hidden {
+      visibility: hidden;
+    }
+
     /* === ЦЕНТРАЛЬНЫЙ КОНТЕЙНЕР === */
     .container {
       width: 900px;
@@ -93,9 +144,9 @@
       box-shadow: 0 0 15px rgba(100, 0, 255, 0.3);
       border: 1px solid #3a3a6e;
       position: absolute;
-      top: 120px;
+      top: 50%;
       left: 50%;
-      transform: translateX(-50%);
+      transform: translate(-50%, -50%);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -123,11 +174,17 @@
       font-size: 16px;
     }
 
-    .timer {
-      font-size: 20px;
-      color: #ff6666;
+    .action-info {
+      font-size: 18px;
       font-weight: bold;
-      margin: 4px 0;
+      margin: 8px 0;
+      text-align: center;
+    }
+    .action-info.blue {
+      color: #4a9eff;
+    }
+    .action-info.red {
+      color: #ff4a4a;
     }
 
     .champions-header {
@@ -422,27 +479,38 @@
 
   <!-- ПИКИ -->
   <div class="side-panel left">
-    <div class="team-label">Blue Team</div>
+    <div class="team-label" id="team-label-blue">Blue Team</div>
     <div id="team-blue-picks" class="team-slots">
-      <div class="slot"><span>TOP</span></div>
-      <div class="slot"><span>JG</span></div>
-      <div class="slot"><span>MID</span></div>
-      <div class="slot"><span>ADC</span></div>
-      <div class="slot"><span>SUP</span></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
     </div>
     <button id="ready-blue" class="btn">Готов (Blue)</button>
   </div>
 
   <div class="side-panel right">
-    <div class="team-label">Red Team</div>
+    <div class="team-label" id="team-label-red">Red Team</div>
     <div id="team-red-picks" class="team-slots">
-      <div class="slot"><span>TOP</span></div>
-      <div class="slot"><span>JG</span></div>
-      <div class="slot"><span>MID</span></div>
-      <div class="slot"><span>ADC</span></div>
-      <div class="slot"><span>SUP</span></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
     </div>
     <button id="ready-red" class="btn">Готов (Red)</button>
+  </div>
+
+  <!-- 🔥 ТАЙМЕРЫ ПО БОКАМ -->
+  <div class="timer-container left" id="timer-left">
+    <div class="team-timer-label" id="timer-label-blue">Blue Team</div>
+    <div class="timer hidden" id="timer-blue">35</div>
+  </div>
+
+  <div class="timer-container right" id="timer-right">
+    <div class="team-timer-label" id="timer-label-red">Red Team</div>
+    <div class="timer hidden" id="timer-red">35</div>
   </div>
 
   <!-- ЦЕНТРАЛЬНЫЙ БЛОК -->
@@ -451,7 +519,7 @@
       <h1>Турнирный драфт — League of Legends</h1>
       
       <div class="phase-info" id="phase-info">Ожидание подключения второй команды...</div>
-      <div class="timer" id="timer">--:--</div>
+      <div class="action-info" id="action-info"></div>
 
       <div class="champions-header">
         <div class="roles-row">
@@ -481,7 +549,7 @@
   <div class="bottom-section">
     <!-- Баны Blue -->
     <div class="ban-team">
-      <div class="team-label">Баны Blue</div>
+      <div class="team-label" id="bans-label-blue">Баны Blue</div>
       <div class="bans-row blue" id="team-blue-bans">
         <div class="slot"><span>BAN 1</span></div>
         <div class="slot"><span>BAN 2</span></div>
@@ -499,7 +567,7 @@
 
     <!-- Баны Red (зеркальные) -->
     <div class="ban-team">
-      <div class="team-label">Баны Red</div>
+      <div class="team-label" id="bans-label-red">Баны Red</div>
       <div class="bans-row red" id="team-red-bans">
         <div class="slot"><span>BAN 1</span></div>
         <div class="slot"><span>BAN 2</span></div>
@@ -534,8 +602,7 @@
     let timeLeft = 35;
     let iAmReady = false;
     let lastPhase = null;
-    let lastTurn = null;
-    let timerRunning = false;
+    let lastActionIndex = -1;
     let currentRoleFilter = "all";
     let allChampions = {};
     let championList = [];
@@ -543,13 +610,23 @@
 
     const container = document.getElementById("champions-container");
     const phaseInfo = document.getElementById("phase-info");
-    const timerEl = document.getElementById("timer");
+    const actionInfo = document.getElementById("action-info");
+    const timerBlue = document.getElementById("timer-blue");
+    const timerRed = document.getElementById("timer-red");
     const confirmBtn = document.getElementById("confirm-btn");
     const readyBlueBtn = document.getElementById("ready-blue");
     const readyRedBtn = document.getElementById("ready-red");
     const captainLinkEl = document.getElementById("captain-link");
     const spectatorLinkEl = document.getElementById("spectator-link");
     const loadingEl = document.getElementById("loading");
+    
+    // ✅ Элементы для названий команд
+    const teamLabelBlue = document.getElementById("team-label-blue");
+    const teamLabelRed = document.getElementById("team-label-red");
+    const timerLabelBlue = document.getElementById("timer-label-blue");
+    const timerLabelRed = document.getElementById("timer-label-red");
+    const bansLabelBlue = document.getElementById("bans-label-blue");
+    const bansLabelRed = document.getElementById("bans-label-red");
 
     // ✅ ПОЛУЧЕНИЕ ПОСЛЕДНЕЙ ВЕРСИИ API
     async function getLatestVersion() {
@@ -664,6 +741,11 @@
     }
 
     function setupEventListeners() {
+      if (mySide === "spectator") {
+        readyBlueBtn.style.display = "none";
+        readyRedBtn.style.display = "none";
+      }
+
       // Фильтрация по ролям
       document.querySelectorAll(".role-cell").forEach(cell => {
         cell.addEventListener("click", (e) => {
@@ -701,7 +783,10 @@
         
         if (selectedCell) selectedCell.classList.remove("selected");
         selectedCell = cell;
-        confirmBtn.disabled = false;
+        
+        if (mySide !== "spectator") {
+          confirmBtn.disabled = false;
+        }
       });
 
       confirmBtn.onclick = handleConfirm;
@@ -758,9 +843,30 @@
         state = await res.json();
         updateUI();
         updateLinkVisibility();
+        updateTeamNames(); // ✅ Обновляем названия команд
       } catch (e) {
         console.error("Sync error", e);
       }
+    }
+
+    // ✅ Обновление названий команд на основе данных из API
+    function updateTeamNames() {
+      if (!state) return;
+      
+      const blueName = state.team_blue_name || "Blue Team";
+      const redName = state.team_red_name || "Red Team";
+      
+      // Обновляем все лейблы
+      teamLabelBlue.textContent = blueName;
+      teamLabelRed.textContent = redName;
+      timerLabelBlue.textContent = blueName;
+      timerLabelRed.textContent = redName;
+      bansLabelBlue.textContent = `Баны ${blueName}`;
+      bansLabelRed.textContent = `Баны ${redName}`;
+      
+      // Обновляем текст кнопок готовности
+      readyBlueBtn.textContent = `Готов (${blueName})`;
+      readyRedBtn.textContent = `Готов (${redName})`;
     }
 
     function updateLinkVisibility() {
@@ -782,14 +888,20 @@
     function updateUI() {
       if (!state) return;
 
-      if (lastPhase !== state.phase) {
-        lastPhase = state.phase;
-        stopTimer();
-        timeLeft = 35;
-        timerEl.textContent = "--:--";
+      const currentActionIndex = state.current_action_index || 0;
+      const currentTurn = state.current_turn || null;
+      const isActivePhase = ["banning_1", "picking_1", "banning_2", "picking_2"].includes(state.phase);
+
+      // ✅ ТАЙМЕР СБРАСЫВАЕТСЯ ПРИ КАЖДОМ НОВОМ ХОДЕ
+      if (lastActionIndex !== currentActionIndex && isActivePhase) {
+        lastActionIndex = currentActionIndex;
+        startTimer();
       }
 
-      if (mySide === "blue") {
+      if (mySide === "spectator") {
+        readyBlueBtn.style.display = "none";
+        readyRedBtn.style.display = "none";
+      } else if (mySide === "blue") {
         readyBlueBtn.disabled = !(state.phase === "ready_check" && !iAmReady);
         readyRedBtn.style.display = "none";
       } else if (mySide === "red") {
@@ -810,9 +922,15 @@
       }
       phaseInfo.textContent = phaseText;
 
-      const isMyTurn = state.current_turn === mySide;
-      const isActivePhase = ["banning_1", "picking_1", "banning_2", "picking_2"].includes(state.phase);
-      confirmBtn.disabled = !isMyTurn || !isActivePhase || !selectedCell;
+      updateActionInfo(currentTurn, isActivePhase);
+
+      // ✅ БЛОКИРОВКА КНОПКИ ЕСЛИ НЕ ТВОЙ ХОД
+      const isMyTurn = currentTurn === mySide;
+      if (mySide === "spectator") {
+        confirmBtn.disabled = true;
+      } else {
+        confirmBtn.disabled = !isMyTurn || !isActivePhase || !selectedCell;
+      }
 
       updateSlots("blue", state.picks_blue);
       updateSlots("red", state.picks_red);
@@ -837,16 +955,36 @@
         }
       });
 
-      if (isActivePhase && isMyTurn) {
-        if (lastTurn !== state.current_turn) {
-          lastTurn = state.current_turn;
-          startTimer();
-        }
-      } else {
+      // ✅ ТАЙМЕР ПОЯВЛЯЕТСЯ СО СТОРОНЫ КОМАНДЫ КОТОРОЙ ХОД
+      if (!isActivePhase || !currentTurn) {
         stopTimer();
-        timerEl.textContent = "--:--";
-        timeLeft = 35;
+        timerBlue.classList.add("hidden");
+        timerRed.classList.add("hidden");
+      } else {
+        if (currentTurn === "blue") {
+          timerBlue.classList.remove("hidden");
+          timerRed.classList.add("hidden");
+        } else {
+          timerBlue.classList.add("hidden");
+          timerRed.classList.remove("hidden");
+        }
       }
+    }
+
+    function updateActionInfo(turn, isActive) {
+      if (!isActive || !turn) {
+        actionInfo.textContent = "";
+        actionInfo.className = "action-info";
+        return;
+      }
+
+      const teamName = turn === "blue" ? "Синяя команда" : "Красная команда";
+      const currentActionIndex = state.current_action_index || 0;
+      const isBan = (currentActionIndex < 6) || (currentActionIndex >= 12 && currentActionIndex < 16);
+      const actionText = isBan ? "банит" : "пикает";
+      
+      actionInfo.textContent = `${teamName} ${actionText}`;
+      actionInfo.className = `action-info ${turn}`;
     }
 
     // ✅ ОБНОВЛЕНИЕ СЛОТОВ С ИКОНКАМИ
@@ -881,9 +1019,6 @@
           }
         } else {
           slot.classList.remove("filled");
-          const roleSpan = document.createElement("span");
-          roleSpan.textContent = ["TOP", "JG", "MID", "ADC", "SUP"][i];
-          slot.appendChild(roleSpan);
         }
       });
     }
@@ -936,17 +1071,26 @@
       }
     }
 
-    // ✅ СТАБИЛЬНЫЙ ТАЙМЕР
+    // ✅ ТАЙМЕР СБРАСЫВАЕТСЯ НА 35 С ПРИ КАЖДОМ ХОДЕ
     function startTimer() {
       timeLeft = 35;
-      timerRunning = true;
       if (timerInterval) clearInterval(timerInterval);
       timerInterval = setInterval(() => {
         timeLeft--;
-        const mins = Math.floor(timeLeft / 60);
-        const secs = timeLeft % 60;
-        timerEl.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-        if (timeLeft <= 0) stopTimer();
+        timerBlue.textContent = timeLeft;
+        timerRed.textContent = timeLeft;
+        
+        if (timeLeft <= 10) {
+          timerBlue.classList.add("warning");
+          timerRed.classList.add("warning");
+        } else {
+          timerBlue.classList.remove("warning");
+          timerRed.classList.remove("warning");
+        }
+        
+        if (timeLeft <= 0) {
+          stopTimer();
+        }
       }, 1000);
     }
 
@@ -955,7 +1099,10 @@
         clearInterval(timerInterval);
         timerInterval = null;
       }
-      timerRunning = false;
+      timerBlue.textContent = "35";
+      timerRed.textContent = "35";
+      timerBlue.classList.remove("warning");
+      timerRed.classList.remove("warning");
     }
 
     async function setReady(side) {
@@ -987,6 +1134,8 @@
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({ champion: championName })
         });
+        
+        stopTimer(); // ✅ Останавливаем таймер после хода
       } catch (e) {
         document.querySelectorAll(".champion-cell").forEach(cell => {
           if (cell.dataset.champion === championName) {
