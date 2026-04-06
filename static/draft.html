@@ -53,8 +53,10 @@
       border: 2px dashed #4a4a7a;
       border-radius: 8px;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      gap: 8px;
       font-size: 14px;
       text-align: center;
       padding: 6px;
@@ -66,6 +68,20 @@
       border-color: #8a2be2;
       background-color: #252540;
       color: #ffffff;
+    }
+    
+    .slot img {
+      width: 70px;
+      height: 70px;
+      object-fit: contain;
+    }
+    
+    .slot .champion-name {
+      font-size: 12px;
+      max-width: 100px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     /* === ЦЕНТРАЛЬНЫЙ КОНТЕЙНЕР === */
@@ -142,9 +158,14 @@
       cursor: pointer;
       transition: all 0.2s;
     }
-    .role-cell:hover {
+    .role-cell:hover, .role-cell.active {
       border-color: #8a8aff;
       background-color: #22223a;
+      color: #fff;
+    }
+    .role-cell.active {
+      border-color: #ffcc00;
+      box-shadow: 0 0 8px rgba(255, 204, 0, 0.5);
     }
 
     #search-input {
@@ -306,17 +327,33 @@
       border: 2px dashed #4a4a7a;
       border-radius: 8px;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       color: #aaa;
       font-weight: bold;
       flex-shrink: 0;
+      gap: 5px;
     }
     .bans-row .slot.filled {
       border-style: solid;
       border-color: #8a2be2;
       background-color: #252540;
       color: #ffffff;
+    }
+    
+    .bans-row .slot img {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+    }
+    
+    .bans-row .slot .champion-name {
+      font-size: 9px;
+      max-width: 80px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     /* === ЦЕНТРАЛЬНЫЕ ССЫЛКИ === */
@@ -387,11 +424,11 @@
   <div class="side-panel left">
     <div class="team-label">Blue Team</div>
     <div id="team-blue-picks" class="team-slots">
-      <div class="slot">TOP</div>
-      <div class="slot">JG</div>
-      <div class="slot">MID</div>
-      <div class="slot">ADC</div>
-      <div class="slot">SUP</div>
+      <div class="slot"><span>TOP</span></div>
+      <div class="slot"><span>JG</span></div>
+      <div class="slot"><span>MID</span></div>
+      <div class="slot"><span>ADC</span></div>
+      <div class="slot"><span>SUP</span></div>
     </div>
     <button id="ready-blue" class="btn">Готов (Blue)</button>
   </div>
@@ -399,11 +436,11 @@
   <div class="side-panel right">
     <div class="team-label">Red Team</div>
     <div id="team-red-picks" class="team-slots">
-      <div class="slot">TOP</div>
-      <div class="slot">JG</div>
-      <div class="slot">MID</div>
-      <div class="slot">ADC</div>
-      <div class="slot">SUP</div>
+      <div class="slot"><span>TOP</span></div>
+      <div class="slot"><span>JG</span></div>
+      <div class="slot"><span>MID</span></div>
+      <div class="slot"><span>ADC</span></div>
+      <div class="slot"><span>SUP</span></div>
     </div>
     <button id="ready-red" class="btn">Готов (Red)</button>
   </div>
@@ -418,11 +455,12 @@
 
       <div class="champions-header">
         <div class="roles-row">
-          <button class="role-cell">TOP</button>
-          <button class="role-cell">JG</button>
-          <button class="role-cell">MID</button>
-          <button class="role-cell">ADC</button>
-          <button class="role-cell">SUP</button>
+          <button class="role-cell active" data-role="all">Все</button>
+          <button class="role-cell" data-role="TOP">TOP</button>
+          <button class="role-cell" data-role="JG">JG</button>
+          <button class="role-cell" data-role="MID">MID</button>
+          <button class="role-cell" data-role="ADC">ADC</button>
+          <button class="role-cell" data-role="SUP">SUP</button>
         </div>
         <input type="text" id="search-input" placeholder="Поиск чемпиона...">
       </div>
@@ -432,7 +470,7 @@
       </div>
 
       <div class="buttons-container">
-        <button id="confirm-btn" class="btn">Подтвердить выбор</button>
+        <button id="confirm-btn" class="btn" disabled>Подтвердить выбор</button>
       </div>
       
       <div id="result"></div>
@@ -445,11 +483,11 @@
     <div class="ban-team">
       <div class="team-label">Баны Blue</div>
       <div class="bans-row blue" id="team-blue-bans">
-        <div class="slot">BAN 1</div>
-        <div class="slot">BAN 2</div>
-        <div class="slot">BAN 3</div>
-        <div class="slot">BAN 4</div>
-        <div class="slot">BAN 5</div>
+        <div class="slot"><span>BAN 1</span></div>
+        <div class="slot"><span>BAN 2</span></div>
+        <div class="slot"><span>BAN 3</span></div>
+        <div class="slot"><span>BAN 4</span></div>
+        <div class="slot"><span>BAN 5</span></div>
       </div>
     </div>
 
@@ -463,11 +501,11 @@
     <div class="ban-team">
       <div class="team-label">Баны Red</div>
       <div class="bans-row red" id="team-red-bans">
-        <div class="slot">BAN 1</div>
-        <div class="slot">BAN 2</div>
-        <div class="slot">BAN 3</div>
-        <div class="slot">BAN 4</div>
-        <div class="slot">BAN 5</div>
+        <div class="slot"><span>BAN 1</span></div>
+        <div class="slot"><span>BAN 2</span></div>
+        <div class="slot"><span>BAN 3</span></div>
+        <div class="slot"><span>BAN 4</span></div>
+        <div class="slot"><span>BAN 5</span></div>
       </div>
     </div>
   </div>
@@ -524,7 +562,7 @@
         return latestVersion;
       } catch (error) {
         console.error('❌ Ошибка получения версии:', error);
-        return '14.23.1'; // Fallback версия
+        return '14.23.1';
       }
     }
 
@@ -536,24 +574,20 @@
       CHAMPION_ICON_BASE = `${DDATA_BASE}/img/champion`;
       
       console.log(`🔧 DataDragon база: ${DDATA_BASE}`);
-      console.log(` Загрузка чемпионов из: ${CHAMPION_DATA_URL}`);
     }
 
-    // ✅ ЗАГРУЗКА ЧЕМПИОНОВ С API (РУССКИЙ ЯЗЫК)
+    // ✅ ЗАГРУЗКА ЧЕМПИОНОВ С API
     async function loadChampionsFromAPI() {
       try {
         const response = await fetch(CHAMPION_DATA_URL);
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
         const data = await response.json();
         allChampions = data.data;
         
         championKeyMap = {};
-        
         Object.values(allChampions).forEach(champ => {
-          championKeyMap[champ.name] = champ.id; // Русское имя → Английский ключ
+          championKeyMap[champ.name] = champ.id;
         });
         
         championList = Object.values(allChampions).sort((a, b) => 
@@ -561,13 +595,9 @@
         );
         
         console.log(`✅ Загружено ${championList.length} чемпионов`);
-        console.log(`✅ Версия API: ${DDATA_VERSION}`);
-        console.log('📋 Последние чемпионы:', championList.slice(-10).map(c => c.name));
-        
         return true;
       } catch (error) {
-        console.error('❌ Ошибка загрузки чемпионов:', error);
-        alert('Не удалось загрузить список чемпионов. Проверьте подключение к интернету.');
+        console.error('❌ Ошибка загрузки:', error);
         return false;
       }
     }
@@ -583,7 +613,7 @@
       mySide = urlParams.get('side');
 
       if (!draftId || !mySide) {
-        alert("Неверная ссылка! Используйте ссылку от создателя комнаты.");
+        alert("Неверная ссылка!");
         return;
       }
 
@@ -596,13 +626,13 @@
             syncAndRender();
             setInterval(syncAndRender, 1000);
           } else {
-            loadingEl.innerHTML = '<h2 style="color: #ff6666;">Ошибка загрузки</h2><p>Обновите страницу</p>';
+            loadingEl.innerHTML = '<h2 style="color: #ff6666;">Ошибка загрузки</h2>';
           }
         });
       });
     }
 
-    // ✅ ОТРИСОВКА ЧЕМПИОНОВ С ФИЛЬТРАЦИЕЙ ПО РОЛЯМ
+    // ✅ ОТРИСОВКА ЧЕМПИОНОВ С ФИЛЬТРАЦИЕЙ
     function renderChampions(roleFilter = "all") {
       container.innerHTML = '';
       
@@ -618,16 +648,11 @@
         cell.classList.add("champion-cell");
         cell.dataset.champion = champ.name;
         cell.dataset.id = champ.id;
-        cell.dataset.role = getChampionRole(champ.id);
 
         const img = document.createElement("img");
-        const iconUrl = getChampionIconUrl(champ.id);
-        img.src = iconUrl;
+        img.src = getChampionIconUrl(champ.id);
         img.alt = champ.name;
-        img.onerror = () => {
-          img.style.display = "none";
-          console.warn(`❌ Иконка не найдена: ${champ.id} (${champ.name})`);
-        };
+        img.onerror = () => { img.style.display = "none"; };
 
         const label = document.createElement("div");
         label.textContent = champ.name;
@@ -638,22 +663,12 @@
       });
     }
 
-    // ✅ ОПРЕДЕЛЕНИЕ РОЛИ ЧЕМПИОНА
-    function getChampionRole(champId) {
-      for (const [role, champions] of Object.entries(ROLE_CHAMPIONS)) {
-        if (champions.includes(champId)) {
-          return role;
-        }
-      }
-      return "other";
-    }
-
     function setupEventListeners() {
       // Фильтрация по ролям
       document.querySelectorAll(".role-cell").forEach(cell => {
         cell.addEventListener("click", (e) => {
           e.preventDefault();
-          const role = cell.dataset.role || cell.textContent;
+          const role = cell.dataset.role;
           currentRoleFilter = role;
           
           document.querySelectorAll(".role-cell").forEach(c => c.classList.remove("active"));
@@ -684,14 +699,9 @@
         const cell = e.target.closest(".champion-cell");
         if (!cell) return;
         
-        if (selectedCell) {
-          selectedCell.classList.remove("selected");
-        }
+        if (selectedCell) selectedCell.classList.remove("selected");
         selectedCell = cell;
-        
-        if (mySide !== "spectator") {
-          confirmBtn.disabled = false;
-        }
+        confirmBtn.disabled = false;
       });
 
       confirmBtn.onclick = handleConfirm;
@@ -737,7 +747,7 @@
           element.style.color = "#a0a0ff";
         }, 2000);
       } catch (err) {
-        alert("Не удалось скопировать ссылку");
+        alert("Не удалось скопировать");
       }
     }
 
@@ -749,7 +759,7 @@
         updateUI();
         updateLinkVisibility();
       } catch (e) {
-        console.error("Failed to sync state", e);
+        console.error("Sync error", e);
       }
     }
 
@@ -827,7 +837,6 @@
         }
       });
 
-      // ✅ ТАЙМЕР ЗАПУСКАЕТСЯ ТОЛЬКО ПРИ СМЕНЕ ХОДА
       if (isActivePhase && isMyTurn) {
         if (lastTurn !== state.current_turn) {
           lastTurn = state.current_turn;
@@ -840,29 +849,90 @@
       }
     }
 
+    // ✅ ОБНОВЛЕНИЕ СЛОТОВ С ИКОНКАМИ
     function updateSlots(side, picks) {
       const slots = document.querySelectorAll(`#team-${side}-picks .slot`);
+      
       picks.forEach((champ, i) => {
         const slot = slots[i];
+        slot.innerHTML = '';
+        
         if (champ) {
-          slot.textContent = champ;
           slot.classList.add("filled");
+          
+          const champId = championKeyMap[champ];
+          if (champId) {
+            const img = document.createElement("img");
+            img.src = getChampionIconUrl(champId);
+            img.alt = champ;
+            img.onerror = () => { img.style.display = "none"; };
+            
+            const nameSpan = document.createElement("span");
+            nameSpan.className = "champion-name";
+            nameSpan.textContent = champ;
+            
+            slot.appendChild(img);
+            slot.appendChild(nameSpan);
+          } else {
+            const nameSpan = document.createElement("span");
+            nameSpan.className = "champion-name";
+            nameSpan.textContent = champ;
+            slot.appendChild(nameSpan);
+          }
         } else {
-          slot.textContent = ["TOP", "JG", "MID", "ADC", "SUP"][i];
           slot.classList.remove("filled");
+          const roleSpan = document.createElement("span");
+          roleSpan.textContent = ["TOP", "JG", "MID", "ADC", "SUP"][i];
+          slot.appendChild(roleSpan);
         }
       });
     }
 
+    // ✅ ОБНОВЛЕНИЕ БАНОВ С ИКОНКАМИ
     function updateBans(side, bans) {
       const slots = document.querySelectorAll(`#team-${side}-bans .slot`);
+      
       bans.forEach((champ, i) => {
-        slots[i].textContent = champ;
-        slots[i].classList.add("filled");
+        const slot = slots[i];
+        slot.innerHTML = '';
+        
+        if (champ) {
+          slot.classList.add("filled");
+          
+          const champId = championKeyMap[champ];
+          if (champId) {
+            const img = document.createElement("img");
+            img.src = getChampionIconUrl(champId);
+            img.alt = champ;
+            img.onerror = () => { img.style.display = "none"; };
+            
+            const nameSpan = document.createElement("span");
+            nameSpan.className = "champion-name";
+            nameSpan.textContent = champ;
+            
+            slot.appendChild(img);
+            slot.appendChild(nameSpan);
+          } else {
+            const nameSpan = document.createElement("span");
+            nameSpan.className = "champion-name";
+            nameSpan.textContent = champ;
+            slot.appendChild(nameSpan);
+          }
+        } else {
+          slot.classList.remove("filled");
+          const banSpan = document.createElement("span");
+          banSpan.textContent = `BAN ${i + 1}`;
+          slot.appendChild(banSpan);
+        }
       });
+      
       for (let i = bans.length; i < 5; i++) {
-        slots[i].textContent = `BAN ${i + 1}`;
-        slots[i].classList.remove("filled");
+        const slot = slots[i];
+        slot.innerHTML = '';
+        slot.classList.remove("filled");
+        const banSpan = document.createElement("span");
+        banSpan.textContent = `BAN ${i + 1}`;
+        slot.appendChild(banSpan);
       }
     }
 
@@ -876,9 +946,7 @@
         const mins = Math.floor(timeLeft / 60);
         const secs = timeLeft % 60;
         timerEl.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-        if (timeLeft <= 0) {
-          stopTimer();
-        }
+        if (timeLeft <= 0) stopTimer();
       }, 1000);
     }
 
@@ -901,7 +969,7 @@
         iAmReady = true;
         updateUI();
       } catch (e) {
-        console.error("Failed to set ready", e);
+        console.error("Ready error", e);
       }
     }
 
@@ -926,7 +994,7 @@
             cell.style.pointerEvents = "";
           }
         });
-        document.getElementById("result").textContent = "Ошибка! Повторите попытку.";
+        document.getElementById("result").textContent = "Ошибка!";
       }
     }
 
