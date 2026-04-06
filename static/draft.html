@@ -500,8 +500,14 @@
         cell.classList.add("champion-cell");
 
         // ✅ ИСПРАВЛЕНО: Загрузка иконок с DataDragon API
-        const key = name.replace(/[^a-zA-Z0-9]/g, '');
+        let key = name
+          .replace(/ /g, "")
+          .replace(/'/g, "")
+          .replace(/\./g, "")
+          .replace(/&/g, "");
+
         const img = document.createElement("img");
+        // ✅ ИСПРАВЛЕНО: Прямая ссылка на DataDragon API вместо локальных файлов
         img.src = `https://ddragon.leagueoflegends.com/cdn/14.23.1/img/champion/${key}.png`;
         img.alt = name;
         img.onerror = () => {
@@ -691,6 +697,7 @@
       }
     }
 
+    // ✅ ИСПРАВЛЕНО: Стабильный таймер с сбросом при запуске
     function startTimer() {
       timeLeft = 35;
       timerRunning = true;
