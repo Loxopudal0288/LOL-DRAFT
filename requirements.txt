@@ -1,9 +1,9 @@
---only-binary pydantic-core
---only-binary pydantic
---only-binary annotated-types
-fastapi==0.115.0
-uvicorn[standard]==0.30.0
-pydantic==2.8.0--no-binary pydantic-core
+--only-binary :all:
+--no-binary :none:
 fastapi==0.115.0
 uvicorn[standard]==0.30.0
 pydantic==2.8.0
+pydantic-core==2.20.0
+annotated-types==0.7.0
+starlette==0.38.6
+typing-extensions==4.15.0
