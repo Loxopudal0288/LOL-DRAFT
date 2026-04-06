@@ -1,4 +1,3 @@
-# app/main.py
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -52,19 +51,19 @@ def get_current_phase(action_index: int) -> str:
 drafts = {}
 
 # === Статика ===
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 async def get_index():
-    return FileResponse("app/static/index.html")
+    return FileResponse("static/index.html")
 
 @app.get("/join")
 async def get_join():
-    return FileResponse("app/static/join.html")
+    return FileResponse("static/join.html")
 
 @app.get("/draft")
 async def get_draft():
-    return FileResponse("app/static/draft.html")
+    return FileResponse("static/draft.html")
 
 # === Модели ===
 class CreateDraftRequest(BaseModel):
