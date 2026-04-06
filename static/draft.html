@@ -293,10 +293,8 @@
       gap: 8px;
     }
     .bans-row.blue {
-      /* Blue: слева направо: BAN1 → BAN5 */
     }
     .bans-row.red {
-      /* 🔥 Red: зеркально — справа налево: BAN5 ← BAN1 */
       flex-direction: row-reverse;
     }
 
@@ -464,9 +462,11 @@
     let state = null;
     let selectedCell = null;
     let timerInterval = null;
-    let timeLeft = 0;
+    let timeLeft = 35;
     let iAmReady = false;
     let lastPhase = null;
+    let lastTurn = null;
+    let timerRunning = false;
 
     const container = document.getElementById("champions-container");
     const phaseInfo = document.getElementById("phase-info");
@@ -499,18 +499,14 @@
         const cell = document.createElement("div");
         cell.classList.add("champion-cell");
 
-        let key = name
-          .replace(/ /g, "")
-          .replace(/'/g, "")
-          .replace(/\./g, "")
-          .replace(/&/g, "");
-
+        // ✅ ИСПРАВЛЕНО: Загрузка иконок с DataDragon API
+        const key = name.replace(/[^a-zA-Z0-9]/g, '');
         const img = document.createElement("img");
-        img.src = `/static/icons/${key}.png`;
+        img.src = `https://ddragon.leagueoflegends.com/cdn/14.23.1/img/champion/${key}.png`;
         img.alt = name;
         img.onerror = () => {
           img.style.display = "none";
-          console.warn(`Иконка не найдена: ${key}.png`);
+          console.warn(`Иконка не найдена: ${key}`);
         };
 
         const label = document.createElement("div");
@@ -605,7 +601,8 @@
       if (lastPhase !== state.phase) {
         lastPhase = state.phase;
         stopTimer();
-        timeLeft = 0;
+        timeLeft = 35;
+        timerEl.textContent = "--:--";
       }
 
       if (mySide === "blue") {
@@ -655,11 +652,16 @@
         }
       });
 
+      // ✅ ИСПРАВЛЕНО: Таймер запускается только при смене хода
       if (isActivePhase && isMyTurn) {
-        startTimer();
+        if (lastTurn !== state.current_turn) {
+          lastTurn = state.current_turn;
+          startTimer();
+        }
       } else {
         stopTimer();
         timerEl.textContent = "--:--";
+        timeLeft = 35;
       }
     }
 
@@ -690,7 +692,8 @@
     }
 
     function startTimer() {
-      if (timeLeft <= 0) timeLeft = 35;
+      timeLeft = 35;
+      timerRunning = true;
       if (timerInterval) clearInterval(timerInterval);
       timerInterval = setInterval(() => {
         timeLeft--;
@@ -708,6 +711,7 @@
         clearInterval(timerInterval);
         timerInterval = null;
       }
+      timerRunning = false;
     }
 
     async function setReady(side) {
