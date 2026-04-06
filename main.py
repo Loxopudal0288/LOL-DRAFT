@@ -51,7 +51,8 @@ def get_current_phase(action_index: int) -> str:
 drafts = {}
 
 # === Статика ===
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# ✅ ИСПРАВЛЕНО: убран параметр name="static"
+app.mount("/static", StaticFiles(directory="static"))
 
 @app.get("/")
 async def get_index():
