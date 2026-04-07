@@ -328,6 +328,9 @@
       opacity: 0.5;
       cursor: not-allowed;
     }
+    .btn.hidden {
+      display: none;
+    }
 
     #result {
       margin-top: 6px;
@@ -359,11 +362,13 @@
       min-width: 260px;
     }
 
+    /* ✅ ИСПРАВЛЕНО: Поднял надпись над банами */
     .ban-team .team-label {
-      margin-bottom: 5px;
+      margin-bottom: 10px;
       font-weight: bold;
       color: #8a8aff;
       font-size: 14px;
+      min-height: 20px;
     }
 
     .bans-row {
@@ -562,7 +567,7 @@
     <!-- Ссылки по центру -->
     <div class="center-links">
       <div id="captain-link" class="link-placeholder">Ссылка для капитана другой команды</div>
-      <div id="spectator-link" class="link-placeholder">Ссылка для спектаторов</div>
+      <div id="spectator-link" class="link-placeholder">👁 Ссылка для спектаторов</div>
     </div>
 
     <!-- Баны Red (зеркальные) -->
@@ -741,9 +746,11 @@
     }
 
     function setupEventListeners() {
+      // ✅ СПЕКТАТОРЫ: СКРЫВАЕМ ВСЕ КНОПКИ
       if (mySide === "spectator") {
-        readyBlueBtn.style.display = "none";
-        readyRedBtn.style.display = "none";
+        readyBlueBtn.classList.add("hidden");
+        readyRedBtn.classList.add("hidden");
+        confirmBtn.classList.add("hidden");
       }
 
       // Фильтрация по ролям
@@ -843,7 +850,7 @@
         state = await res.json();
         updateUI();
         updateLinkVisibility();
-        updateTeamNames(); // ✅ Обновляем названия команд
+        updateTeamNames();
       } catch (e) {
         console.error("Sync error", e);
       }
@@ -878,11 +885,8 @@
         captainLinkEl.style.display = "none";
       }
 
-      if (state.phase !== "lobby" && state.phase !== "ready_check") {
-        spectatorLinkEl.style.display = "block";
-      } else {
-        spectatorLinkEl.style.display = "none";
-      }
+      // ✅ СПЕКТАТОРСКАЯ ССЫЛКА ВСЕГДА ВИДНА
+      spectatorLinkEl.style.display = "block";
     }
 
     function updateUI() {
@@ -898,15 +902,21 @@
         startTimer();
       }
 
+      // ✅ СКРЫВАЕМ КНОПКИ ГОТОВНОСТИ ПОСЛЕ НАЧАЛА ДРАФТА
+      if (state.phase !== "lobby" && state.phase !== "ready_check") {
+        readyBlueBtn.classList.add("hidden");
+        readyRedBtn.classList.add("hidden");
+      }
+
       if (mySide === "spectator") {
-        readyBlueBtn.style.display = "none";
-        readyRedBtn.style.display = "none";
+        readyBlueBtn.classList.add("hidden");
+        readyRedBtn.classList.add("hidden");
       } else if (mySide === "blue") {
         readyBlueBtn.disabled = !(state.phase === "ready_check" && !iAmReady);
-        readyRedBtn.style.display = "none";
+        readyRedBtn.classList.add("hidden");
       } else if (mySide === "red") {
         readyRedBtn.disabled = !(state.phase === "ready_check" && !iAmReady);
-        readyBlueBtn.style.display = "none";
+        readyBlueBtn.classList.add("hidden");
       }
 
       let phaseText = "";
@@ -1135,7 +1145,7 @@
           body: JSON.stringify({ champion: championName })
         });
         
-        stopTimer(); // ✅ Останавливаем таймер после хода
+        stopTimer();
       } catch (e) {
         document.querySelectorAll(".champion-cell").forEach(cell => {
           if (cell.dataset.champion === championName) {
